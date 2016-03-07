@@ -53,16 +53,17 @@ def insert_many(objects, using="default"):
     column_names = ",".join(con.ops.quote_name(f.column) for f in fields)
     placeholders = ",".join(("%s",) * len(fields))
 
-    from django import VERSION
+    from distutils.version import StrictVersion
+    from django import get_version
     # see https://docs.djangoproject.com/en/1.9/internals/deprecation/#deprecation-removed-in-1-8
-    if VERSION[2] < 7:
-        con.cursor().executemany("insert into %s (%s) values (%s)"
-                                % (table, column_names, placeholders), parameters)
-        transaction.commit_unless_managed(using=using)
-    else:
+    if StrictVersion(get_version()) >= StrictVersion('1.6.0'):
         with transaction.atomic():
             con.cursor().executemany("insert into %s (%s) values (%s)"
                                     % (table, column_names, placeholders), parameters)
+    else:
+        con.cursor().executemany("insert into %s (%s) values (%s)"
+                                % (table, column_names, placeholders), parameters)
+        transaction.commit_unless_managed(using=using)
 
 
 def update_many(objects, fields=[], using="default"):
