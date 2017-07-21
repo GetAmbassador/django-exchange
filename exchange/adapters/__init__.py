@@ -42,6 +42,9 @@ class BaseAdapter(object):
                                                   target.code,
                                                   usd_exchange_rates)
 
+                if rate == False:
+                    continue
+
                 exchange_rate = ExchangeRate(source=source,
                                              target=target,
                                              rate=rate)
@@ -66,8 +69,23 @@ class BaseAdapter(object):
     def _get_rate_through_usd(self, source, target, usd_rates):
         # from: https://openexchangerates.org/documentation#how-to-use
         # gbp_hkd = usd_hkd * (1 / usd_gbp)
-        usd_source = usd_rates[source]
-        usd_target = usd_rates[target]
+        error = False
+
+        try:
+            usd_source = usd_rates[source]
+        except KeyError:
+            Currency.objects.filter(code=source).delete()
+            error = True
+
+        try:
+            usd_target = usd_rates[target]
+        except KeyError:
+            Currency.objects.filter(code=target).delete()
+            error = True
+
+        if error:
+            return False
+
         rate = usd_target * (Decimal(1.0) / usd_source)
         rate = rate.quantize(Decimal('0.123456'))  # round to 6 decimal places
         return rate
