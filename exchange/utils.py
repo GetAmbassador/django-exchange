@@ -17,7 +17,7 @@ def import_class(class_path):
     'OrderedDict'
     """
     try:
-        from django.utils.importlib import import_module
+        from importlib import import_module
         module_name = '.'.join(class_path.split(".")[:-1])
         mod = import_module(module_name)
         return getattr(mod, class_path.split(".")[-1])
@@ -52,9 +52,18 @@ def insert_many(objects, using="default"):
     table = model._meta.db_table
     column_names = ",".join(con.ops.quote_name(f.column) for f in fields)
     placeholders = ",".join(("%s",) * len(fields))
-    con.cursor().executemany("insert into %s (%s) values (%s)"
-                             % (table, column_names, placeholders), parameters)
-    transaction.commit_unless_managed(using=using)
+
+    from distutils.version import StrictVersion
+    from django import get_version
+    # see https://docs.djangoproject.com/en/1.9/internals/deprecation/#deprecation-removed-in-1-8
+    if StrictVersion(get_version()) >= StrictVersion('1.6.0'):
+        with transaction.atomic():
+            con.cursor().executemany("insert into %s (%s) values (%s)"
+                                    % (table, column_names, placeholders), parameters)
+    else:
+        con.cursor().executemany("insert into %s (%s) values (%s)"
+                                % (table, column_names, placeholders), parameters)
+        transaction.commit_unless_managed(using=using)
 
 
 def update_many(objects, fields=[], using="default"):
@@ -91,11 +100,23 @@ def update_many(objects, fields=[], using="default"):
     table = meta.db_table
     assignments = ",".join(("%s=%%s" % con.ops.quote_name(f.column))
                            for f in fields)
-    con.cursor().executemany("update %s set %s where %s=%%s"
-                             % (table, assignments,
-                                con.ops.quote_name(meta.pk.column)),
-                             parameters)
-    transaction.commit_unless_managed(using=using)
+
+    from distutils.version import StrictVersion
+    from django import get_version
+    # see https://docs.djangoproject.com/en/1.9/internals/deprecation/#deprecation-removed-in-1-8
+    if StrictVersion(get_version()) >= StrictVersion('1.6.0'):
+        with transaction.atomic():
+            con.cursor().executemany("update %s set %s where %s=%%s"
+                                    % (table, assignments,
+                                        con.ops.quote_name(meta.pk.column)),
+                                    parameters)
+    else:
+        con.cursor().executemany("update %s set %s where %s=%%s"
+                                % (table, assignments,
+                                    con.ops.quote_name(meta.pk.column)),
+                                parameters)
+        transaction.commit_unless_managed(using=using)
+
 
 
 def memoize(ttl=None):
