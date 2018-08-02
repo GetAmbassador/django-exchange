@@ -87,7 +87,7 @@ class BaseAdapter(object):
             return False
 
         rate = usd_target * (Decimal(1.0) / usd_source)
-        rate = rate.quantize(Decimal('0.123456'))  # round to 6 decimal places
+        rate = rate.quantize(Decimal('0.12345678'))  # round to 8 decimal places
         return rate
 
     def get_currencies(self):
