@@ -21,7 +21,7 @@ def import_class(class_path):
         module_name = '.'.join(class_path.split(".")[:-1])
         mod = import_module(module_name)
         return getattr(mod, class_path.split(".")[-1])
-    except Exception, detail:
+    except Exception as detail:
         raise ImportError(detail)
 
 
@@ -86,7 +86,7 @@ def update_many(objects, fields=[], using="default"):
     parameters = []
     for o in objects:
         parameters.append(tuple(f.get_db_prep_save(f.pre_save(o, True),
-                          connection=con) for f in fields_with_pk))
+                                                   connection=con) for f in fields_with_pk))
 
     table = meta.db_table
     assignments = ",".join(("%s=%%s" % con.ops.quote_name(f.column))
