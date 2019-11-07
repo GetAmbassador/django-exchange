@@ -86,7 +86,7 @@ def update_many(objects, fields=[], using="default"):
     parameters = []
     for o in objects:
         parameters.append(tuple(f.get_db_prep_save(f.pre_save(o, True),
-                          connection=con) for f in fields_with_pk))
+                                                   connection=con) for f in fields_with_pk))
 
     table = meta.db_table
     assignments = ",".join(("%s=%%s" % con.ops.quote_name(f.column))
