@@ -54,7 +54,6 @@ def insert_many(objects, using="default"):
     placeholders = ",".join(("%s",) * len(fields))
     con.cursor().executemany("insert into %s (%s) values (%s)"
                              % (table, column_names, placeholders), parameters)
-    transaction.commit_unless_managed(using=using)
 
 
 def update_many(objects, fields=[], using="default"):
@@ -95,7 +94,6 @@ def update_many(objects, fields=[], using="default"):
                              % (table, assignments,
                                 con.ops.quote_name(meta.pk.column)),
                              parameters)
-    transaction.commit_unless_managed(using=using)
 
 
 def memoize(ttl=None):
