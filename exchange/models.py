@@ -21,7 +21,7 @@ class Currency(models.Model):
 class ExchangeRate(models.Model):
     """Model to persist exchange rates between currencies"""
     source = models.ForeignKey('exchange.Currency', related_name='rates', null=True, on_delete=models.CASCADE)
-    target = models.ForeignKey('exchange.Currency', null=True, on_delete=models.CASCADE))
+    target = models.ForeignKey('exchange.Currency', null=True, on_delete=models.CASCADE)
     rate = models.DecimalField(max_digits=19, decimal_places=8)
 
     objects = ExchangeRateManager()
